@@ -3,12 +3,22 @@
 #include "dat.h"
 #include "fns.h"
 
+static gboolean
+on_draw_textview (GtkWidget *widget, cairo_t *cr, gpointer user_data)
+{
+	cairo_set_source_rgba (cr, 0, 0, 0, 0.85);
+	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
+	cairo_paint (cr);
+}
+
 int
 main(int argc, char **argv)
 {
 	GtkWidget *window, *grid, *entry, *textview;
 	PangoFontDescription *fontdesc;
 	Data *data;
+	GdkScreen *screen;
+	GdkVisual *visual;
 	
 	gtk_init (&argc, &argv);
 
@@ -26,6 +36,12 @@ main(int argc, char **argv)
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+	gtk_widget_set_app_paintable (window, TRUE);
+	screen = gdk_screen_get_default ();
+	visual = gdk_screen_get_rgba_visual (screen);
+	if (visual != NULL && gdk_screen_is_composited (screen)) {
+		gtk_widget_set_visual (window, visual);
+	}
 
 	grid = gtk_grid_new ();
 	gtk_widget_set_hexpand (grid, TRUE);
@@ -33,6 +49,7 @@ main(int argc, char **argv)
 	gtk_container_add (GTK_CONTAINER (window), grid);
 
 	textview = gtk_text_view_new ();
+	g_signal_connect(textview, "draw", G_CALLBACK(on_draw_textview), NULL); 
 	data->scrolled = gtk_scrolled_window_new (NULL, NULL);
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
 	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
@@ -44,12 +61,38 @@ main(int argc, char **argv)
 	gtk_widget_set_vexpand (data->scrolled, TRUE);
 	gtk_grid_attach (GTK_GRID (grid), data->scrolled, 0, 0, 1, 1);
 	data->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
-	gtk_text_buffer_create_tag(data->buffer, "bluefg", "foreground", "blue", NULL); 
-	gtk_text_buffer_create_tag(data->buffer, "greenfg", "foreground", "green", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "redfg", "foreground", "red", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "orangefg", "foreground", "orange", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "yellowfg", "foreground", "yellow", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "greenfg", "foreground", "green", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "bluefg", "foreground", "blue", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "purplefg", "foreground", "purple", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "blackfg", "foreground", "black", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "whitefg", "foreground", "white", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "grayfg", "foreground", "gray", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "brownfg", "foreground", "brown", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightgreenfg", "foreground", "light green", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "cyanfg", "foreground", "cyan", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightcyanfg", "foreground", "light cyan", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightbluefg", "foreground", "light blue", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightgrayfg", "foreground", "light gray", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "pinkfg", "foreground", "pink", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "redbg", "background", "red", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "orangebg", "background", "orange", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "yellowbg", "background", "yellow", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "greenbg", "background", "green", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "bluebg", "background", "blue", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "purplebg", "background", "purple", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "blackbg", "background", "black", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "whitebg", "background", "white", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "transbg", "background-rgba", ((GdkRGBA){0,0,0,0}), NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "graybg", "background", "gray", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "brownbg", "background", "brown", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightgreenbg", "background", "light green", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "cyanbg", "background", "cyan", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightcyanbg", "background", "light cyan", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightbluebg", "background", "light blue", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "lightgraybg", "background", "light gray", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
 	gtk_text_buffer_create_tag(data->buffer, "unitalic", "style", PANGO_STYLE_NORMAL, NULL);
 	gtk_text_buffer_create_tag(data->buffer, "bold", "weight", PANGO_WEIGHT_BOLD, NULL);
