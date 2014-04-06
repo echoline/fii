@@ -14,6 +14,10 @@ main(int argc, char **argv)
 
 	data = g_new0 (Data, 1);
 
+	if (argc > 1) {
+		data->nick = g_strdup (argv[1]);
+	}
+
 	data->in = open ("in", O_WRONLY);
 	data->out = open ("out", O_RDONLY);
 
@@ -40,6 +44,16 @@ main(int argc, char **argv)
 	gtk_widget_set_vexpand (data->scrolled, TRUE);
 	gtk_grid_attach (GTK_GRID (grid), data->scrolled, 0, 0, 1, 1);
 	data->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+	gtk_text_buffer_create_tag(data->buffer, "bluefg", "foreground", "blue", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "greenfg", "foreground", "green", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "redfg", "foreground", "red", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "blackfg", "foreground", "black", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "whitebg", "background", "white", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "graybg", "background", "gray", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
+	gtk_text_buffer_create_tag(data->buffer, "unitalic", "style", PANGO_STYLE_NORMAL, NULL);
+	gtk_text_buffer_create_tag(data->buffer, "bold", "weight", PANGO_WEIGHT_BOLD, NULL);
+	gtk_text_buffer_create_tag(data->buffer, "unbold", "weight", PANGO_WEIGHT_NORMAL, NULL);
 	g_timeout_add (1, (GSourceFunc)readircmsgs, data);
 
 	entry = gtk_entry_new ();

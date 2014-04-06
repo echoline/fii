@@ -4,5 +4,6 @@ typedef struct Data {
 	int offs;
 	GtkWidget *scrolled;
 	GtkTextBuffer *buffer;
+	gchar *nick;
 } Data;
 
