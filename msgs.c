@@ -52,6 +52,7 @@ parseirc (Data *data, gchar *buf, gint r)
 	gint c, d;
 	gint i = 0;
 	gboolean postcomma;
+	gint spaces = 0;
 
 	while (buf[i]) {
 		if (data->nick && !g_ascii_strncasecmp(&buf[i], data->nick,
@@ -63,8 +64,14 @@ parseirc (Data *data, gchar *buf, gint r)
 				chunk = NULL;
 			}
 
-			postirc (data, &buf[i], strlen(data->nick), bold,
-					italics, underline, "redfg", bg);
+			if (!g_ascii_isalnum(buf[i-1]) &&
+					!g_ascii_isalnum(buf[i +
+							strlen(data->nick)]))
+				postirc (data, &buf[i], strlen(data->nick),
+					bold, italics, underline, "redfg", bg);
+			else
+				postirc (data, &buf[i], strlen(data->nick),
+					bold, italics, underline, fg, bg);
 
 			i += strlen (data->nick);
 		}
@@ -257,15 +264,18 @@ parseirc (Data *data, gchar *buf, gint r)
 				chunk = NULL;
 			}
 
-			g_free (fg);
-			fg = g_strdup ("whitefg");
-			postirc (data, "<", 1, bold, italics, underline, fg, bg);
-
-			if (!nick) {
+			if (spaces == 2) {
 				g_free (fg);
-				fg = g_strdup ("lightbluefg");
-				nick++;
-			}
+				fg = g_strdup ("whitefg");
+				postirc (data, "<", 1, bold, italics, underline, fg, bg);
+
+				if (!nick) {
+					g_free (fg);
+					fg = g_strdup ("cyanfg");
+					nick++;
+				}
+			} else
+				postirc (data, "<", 1, bold, italics, underline, fg, bg);
 			break;
 		case '>':
 			if (chunk) {
@@ -292,6 +302,8 @@ parseirc (Data *data, gchar *buf, gint r)
 
 			break;
 		case '\n':
+			spaces = 0;
+
 			if (chunk) {
 				postirc (data, chunk, strlen(chunk), bold,
 					italics, underline, fg, bg);
@@ -307,6 +319,8 @@ parseirc (Data *data, gchar *buf, gint r)
 
 			postirc (data, "\n", 1, bold, italics, underline, fg, bg);
 			break;
+		case ' ':
+			spaces++;
 		default:
 			if (chunk == NULL) {
 				chunk = g_strdup_printf ("%c", buf[i]);

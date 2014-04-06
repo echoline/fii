@@ -1,4 +1,5 @@
 #include <gtk/gtk.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include "dat.h"
 #include "fns.h"
@@ -19,6 +20,9 @@ main(int argc, char **argv)
 	Data *data;
 	GdkScreen *screen;
 	GdkVisual *visual;
+	gchar title[PATH_MAX];
+
+	getcwd (title, PATH_MAX-1);
 	
 	gtk_init (&argc, &argv);
 
@@ -35,6 +39,7 @@ main(int argc, char **argv)
 		return -1;
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
+	gtk_window_set_title (GTK_WINDOW (window), title);
 	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
 	gtk_widget_set_app_paintable (window, TRUE);
 	screen = gdk_screen_get_default ();
