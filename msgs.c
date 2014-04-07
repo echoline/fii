@@ -38,6 +38,19 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 }
 
 static gboolean
+find_nick(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter,
+	gpointer data)
+{
+	gchar *nick;
+	gtk_tree_model_get (model, iter, 0, &nick, -1);
+
+	((ListCBData*)data)->found = !g_strcmp0 (nick,
+						((ListCBData*)data)->nick);
+
+	return ((ListCBData*)data)->found;
+}
+
+static gboolean
 parseirc (Data *data, gchar *buf, gint r)
 {
 	gboolean bold = FALSE;
@@ -53,6 +66,8 @@ parseirc (Data *data, gchar *buf, gint r)
 	gint i = 0;
 	gboolean postcomma;
 	gint spaces = 0;
+	ListCBData *cbdata = g_new0 (ListCBData, 1);
+	GtkTreeIter iter;
 
 	while (buf[i]) {
 		if (data->nick && !g_ascii_strncasecmp(&buf[i], data->nick,
@@ -278,8 +293,8 @@ parseirc (Data *data, gchar *buf, gint r)
 				postirc (data, "<", 1, bold, italics, underline, fg, bg);
 			break;
 		case '>':
-			if (chunk) {
-				if (nick < 2 && data->nick &&
+			if (chunk && nick < 2) {
+				if (data->nick &&
 				    !g_strcmp0 (data->nick, chunk)) {
 					g_free (fg);
 					fg = g_strdup ("redfg");
@@ -288,6 +303,20 @@ parseirc (Data *data, gchar *buf, gint r)
 				postirc (data, chunk, strlen(chunk),
 					bold, italics, underline,
 					fg, bg);
+
+				cbdata->found = FALSE;
+				cbdata->nick = chunk;
+				gtk_tree_model_foreach (
+					GTK_TREE_MODEL (data->nicks),
+					find_nick, cbdata);
+
+				if (!cbdata->found) {
+					gtk_list_store_append(data->nicks,
+								&iter);
+					gtk_list_store_set(data->nicks, &iter,
+								0, chunk, -1);
+				}
+
 				g_free (chunk);
 				chunk = NULL;
 			}
@@ -335,6 +364,8 @@ parseirc (Data *data, gchar *buf, gint r)
 
 		i++;
 	}
+
+	g_free (cbdata);
 }
 
 gboolean

@@ -5,5 +5,10 @@ typedef struct Data {
 	GtkWidget *scrolled;
 	GtkTextBuffer *buffer;
 	gchar *nick;
+	GtkListStore *nicks;
 } Data;
 
+typedef struct ListCBData {
+	gboolean found;
+	gchar *nick;
+} ListCBData;

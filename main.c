@@ -10,6 +10,8 @@ on_draw_textview (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	cairo_set_source_rgba (cr, 0, 0, 0, 0.85);
 	cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
 	cairo_paint (cr);
+
+	return FALSE;
 }
 
 int
@@ -21,6 +23,7 @@ main(int argc, char **argv)
 	GdkScreen *screen;
 	GdkVisual *visual;
 	gchar title[PATH_MAX];
+	GtkEntryCompletion *completion;
 
 	getcwd (title, PATH_MAX-1);
 	
@@ -41,6 +44,7 @@ main(int argc, char **argv)
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), title);
 	g_signal_connect (window, "destroy", G_CALLBACK (gtk_main_quit), NULL);
+
 	gtk_widget_set_app_paintable (window, TRUE);
 	screen = gdk_screen_get_default ();
 	visual = gdk_screen_get_rgba_visual (screen);
@@ -55,16 +59,18 @@ main(int argc, char **argv)
 
 	textview = gtk_text_view_new ();
 	g_signal_connect(textview, "draw", G_CALLBACK(on_draw_textview), NULL); 
-	data->scrolled = gtk_scrolled_window_new (NULL, NULL);
 	gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
 	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
 	fontdesc = pango_font_description_from_string ("monospace 10");
 	gtk_widget_override_font (textview, fontdesc);
 	pango_font_description_free (fontdesc);
+
+	data->scrolled = gtk_scrolled_window_new (NULL, NULL);
 	gtk_container_add (GTK_CONTAINER (data->scrolled), textview);
 	gtk_widget_set_hexpand (data->scrolled, TRUE);
 	gtk_widget_set_vexpand (data->scrolled, TRUE);
 	gtk_grid_attach (GTK_GRID (grid), data->scrolled, 0, 0, 1, 1);
+
 	data->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
 	gtk_text_buffer_create_tag(data->buffer, "redfg", "foreground", "red", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "orangefg", "foreground", "orange", NULL); 
@@ -109,6 +115,15 @@ main(int argc, char **argv)
 	gtk_widget_set_vexpand (entry, FALSE);
 	g_signal_connect (entry, "activate", G_CALLBACK (sendircmsg), data);
 	gtk_grid_attach (GTK_GRID (grid), entry, 0, 1, 1, 1);
+
+	completion = gtk_entry_completion_new ();
+	gtk_entry_set_completion (GTK_ENTRY (entry), completion);
+
+	data->nicks = gtk_list_store_new (1, G_TYPE_STRING);
+	gtk_entry_completion_set_model (completion,
+					GTK_TREE_MODEL (data->nicks));
+	
+	gtk_entry_completion_set_text_column (completion, 0);
 
 	gtk_widget_show_all (window);
 
