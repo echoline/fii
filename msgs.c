@@ -36,6 +36,8 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 				italics ? "italics" : "unitalics",
 				underline ? "underline" : "ununderline",
 				fg, bg, NULL);
+
+	data->scrolling = FALSE;
 }
 
 static gboolean
@@ -416,11 +418,13 @@ readircmsgs (gpointer *arg)
 		lseek (data->out, data->offs, SEEK_SET);
 	}
 
-	adj = gtk_scrolled_window_get_vadjustment (
-			GTK_SCROLLED_WINDOW (data->scrolled));
-	gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
-	gtk_scrolled_window_set_vadjustment (
-			GTK_SCROLLED_WINDOW (data->scrolled), adj);
+	if (!data->scrolling) {
+		adj = gtk_scrolled_window_get_vadjustment (
+				GTK_SCROLLED_WINDOW (data->scrolled));
+		gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
+		gtk_scrolled_window_set_vadjustment (
+				GTK_SCROLLED_WINDOW (data->scrolled), adj);
+	}
 
 	return TRUE;
 }

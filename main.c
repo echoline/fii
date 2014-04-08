@@ -14,10 +14,21 @@ on_draw_textview (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	return FALSE;
 }
 
+static gboolean
+on_button_press_event_scrollbar (GtkWidget *widget, GdkEventButton *event,
+								gpointer arg)
+{
+	Data *data = (Data*)arg;
+
+	data->scrolling = TRUE;
+
+	return FALSE;
+}
+
 int
 main(int argc, char **argv)
 {
-	GtkWidget *window, *grid, *entry, *textview;
+	GtkWidget *window, *grid, *entry, *textview, *scrollbar;
 	PangoFontDescription *fontdesc;
 	Data *data;
 	GdkScreen *screen;
@@ -66,6 +77,10 @@ main(int argc, char **argv)
 	pango_font_description_free (fontdesc);
 
 	data->scrolled = gtk_scrolled_window_new (NULL, NULL);
+	scrollbar = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW
+							(data->scrolled));
+	g_signal_connect (scrollbar, "button-press-event",
+			G_CALLBACK (on_button_press_event_scrollbar), data);
 	gtk_container_add (GTK_CONTAINER (data->scrolled), textview);
 	gtk_widget_set_hexpand (data->scrolled, TRUE);
 	gtk_widget_set_vexpand (data->scrolled, TRUE);

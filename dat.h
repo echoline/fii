@@ -6,6 +6,7 @@ typedef struct Data {
 	GtkTextBuffer *buffer;
 	gchar *nick;
 	GtkListStore *nicks;
+	gboolean scrolling;
 } Data;
 
 typedef struct ListCBData {
