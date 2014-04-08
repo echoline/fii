@@ -8,9 +8,15 @@ void
 sendircmsg (GtkEntry *entry, gpointer arg)
 {
 	Data *data = (Data*)arg;
-	const gchar *text = gtk_entry_get_text (entry);
+	gchar *text = (gchar*)gtk_entry_get_text (entry);
+	gchar *chunk;
 
-	if (write (data->in, text, strlen (text)) < 0 ||
+	if (!g_ascii_strncasecmp (text, "/me ", 4))
+		chunk = g_strdup_printf ("\001ACTION %s\001", &text[4]);
+	else
+		chunk = text;
+
+	if (write (data->in, chunk, strlen (chunk)) < 0 ||
 	    write (data->in, "\n", 1) < 0) {
 		gtk_main_quit();
 	}
@@ -27,8 +33,10 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 
 	gtk_text_buffer_get_end_iter (data->buffer, &end);
 	gtk_text_buffer_insert_with_tags_by_name (data->buffer, &end, buf, r,
-						bold ? "bold" : "unbold",
-							fg, bg, NULL);
+				bold ? "bold" : "unbold",
+				italics ? "italics" : "unitalics",
+				underline ? "underline" : "ununderline",
+				fg, bg, NULL);
 
 	adj = gtk_scrolled_window_get_vadjustment (
 			GTK_SCROLLED_WINDOW (data->scrolled));
@@ -104,7 +112,7 @@ parseirc (Data *data, gchar *buf, gint r)
 			g_free(bg);
 			bg = g_strdup ("transbg");
 			g_free (fg);
-			fg = g_strdup ("greenfg");
+			fg = g_strdup ("whitefg");
 
 			break;
 		case 0x03:
@@ -152,8 +160,65 @@ parseirc (Data *data, gchar *buf, gint r)
 				}
 			}
 
+			switch (c) {
+			default:
+			case 0:
+				fg = g_strdup ("whitefg");
+				break;
+			case 1:
+				fg = g_strdup ("blackfg");
+				break;
+			case 2:
+				fg = g_strdup ("bluefg");
+				break;
+			case 3:
+				fg = g_strdup ("greenfg");
+				break;
+			case 4:
+				fg = g_strdup ("redfg");
+				break;
+			case 5:
+				fg = g_strdup ("brownfg");
+				break;
+			case 6:
+				fg = g_strdup ("purplefg");
+				break;
+			case 7:
+				fg = g_strdup ("orangefg");
+				break;
+			case 8:
+				fg = g_strdup ("yellowfg");
+				break;
+			case 9:
+				fg = g_strdup ("lightgreenfg");
+				break;
+			case 10:
+				fg = g_strdup ("cyanfg");
+				break;
+			case 11:
+				fg = g_strdup ("lightcyanfg");
+				break;
+			case 12:
+				fg = g_strdup ("lightbluefg");
+				break;
+			case 13:
+				fg = g_strdup ("pinkfg");
+				break;
+			case 14:
+				fg = g_strdup ("grayfg");
+				break;
+			case 15:
+				fg = g_strdup ("lightgrayfg");
+				break;
+			}
+
 			switch (d) {
 			default:
+				if (c == 1)
+					bg = g_strdup ("whitebg");
+				else
+					bg = g_strdup ("transbg");
+				break;
 			case 0:
 				bg = g_strdup ("whitebg");
 				break;
@@ -204,58 +269,6 @@ parseirc (Data *data, gchar *buf, gint r)
 				break;
 			}
 
-			switch (c) {
-			case 0:
-				fg = g_strdup ("whitefg");
-				break;
-			default:
-			case 1:
-				fg = g_strdup ("blackfg");
-				break;
-			case 2:
-				fg = g_strdup ("bluefg");
-				break;
-			case 3:
-				fg = g_strdup ("greenfg");
-				break;
-			case 4:
-				fg = g_strdup ("redfg");
-				break;
-			case 5:
-				fg = g_strdup ("brownfg");
-				break;
-			case 6:
-				fg = g_strdup ("purplefg");
-				break;
-			case 7:
-				fg = g_strdup ("orangefg");
-				break;
-			case 8:
-				fg = g_strdup ("yellowfg");
-				break;
-			case 9:
-				fg = g_strdup ("lightgreenfg");
-				break;
-			case 10:
-				fg = g_strdup ("cyanfg");
-				break;
-			case 11:
-				fg = g_strdup ("lightcyanfg");
-				break;
-			case 12:
-				fg = g_strdup ("lightbluefg");
-				break;
-			case 13:
-				fg = g_strdup ("pinkfg");
-				break;
-			case 14:
-				fg = g_strdup ("grayfg");
-				break;
-			case 15:
-				fg = g_strdup ("lightgrayfg");
-				break;
-			}
-
 			if (postcomma) 
 				postirc (data, ",", 1, bold, italics,
 					underline, fg, bg);
@@ -270,6 +283,26 @@ parseirc (Data *data, gchar *buf, gint r)
 			}
 
 			bold = !bold;
+			break;
+		case 0x1D:
+			if (chunk) {
+				postirc (data, chunk, strlen(chunk), bold,
+					italics, underline, fg, bg);
+				g_free (chunk);
+				chunk = NULL;
+			}
+
+			italics = !italics;
+			break;
+		case 0x1F:
+			if (chunk) {
+				postirc (data, chunk, strlen(chunk), bold,
+					italics, underline, fg, bg);
+				g_free (chunk);
+				chunk = NULL;
+			}
+
+			underline = !underline;
 			break;
 		case '<':
 			if (chunk) {
@@ -293,8 +326,8 @@ parseirc (Data *data, gchar *buf, gint r)
 				postirc (data, "<", 1, bold, italics, underline, fg, bg);
 			break;
 		case '>':
-			if (chunk && nick < 2) {
-				if (data->nick &&
+			if (chunk) {
+				if (nick < 2 && data->nick &&
 				    !g_strcmp0 (data->nick, chunk)) {
 					g_free (fg);
 					fg = g_strdup ("redfg");
@@ -304,17 +337,19 @@ parseirc (Data *data, gchar *buf, gint r)
 					bold, italics, underline,
 					fg, bg);
 
-				cbdata->found = FALSE;
-				cbdata->nick = chunk;
-				gtk_tree_model_foreach (
-					GTK_TREE_MODEL (data->nicks),
-					find_nick, cbdata);
+				if (spaces == 2) {
+					cbdata->found = FALSE;
+					cbdata->nick = chunk;
+					gtk_tree_model_foreach (
+						GTK_TREE_MODEL (data->nicks),
+						find_nick, cbdata);
 
-				if (!cbdata->found) {
-					gtk_list_store_append(data->nicks,
-								&iter);
-					gtk_list_store_set(data->nicks, &iter,
-								0, chunk, -1);
+					if (!cbdata->found) {
+						gtk_list_store_append(data->nicks,
+									&iter);
+						gtk_list_store_set(data->nicks, &iter,
+									0, chunk, -1);
+					}
 				}
 
 				g_free (chunk);
