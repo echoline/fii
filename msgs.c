@@ -29,7 +29,6 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 	gboolean underline, gchar *fg, gchar *bg)
 {
 	GtkTextIter end;
-	GtkAdjustment *adj;
 
 	gtk_text_buffer_get_end_iter (data->buffer, &end);
 	gtk_text_buffer_insert_with_tags_by_name (data->buffer, &end, buf, r,
@@ -37,12 +36,6 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 				italics ? "italics" : "unitalics",
 				underline ? "underline" : "ununderline",
 				fg, bg, NULL);
-
-	adj = gtk_scrolled_window_get_vadjustment (
-			GTK_SCROLLED_WINDOW (data->scrolled));
-	gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
-	gtk_scrolled_window_set_vadjustment (
-			GTK_SCROLLED_WINDOW (data->scrolled), adj);
 }
 
 static gboolean
@@ -406,6 +399,7 @@ parseirc (Data *data, gchar *buf, gint r)
 gboolean
 readircmsgs (gpointer *arg)
 {
+	GtkAdjustment *adj;
 	Data *data = (Data*)arg;
 	gint r;
 	gchar buf[0x10000];
@@ -421,6 +415,12 @@ readircmsgs (gpointer *arg)
 		data->out = open ("out", O_RDONLY);
 		lseek (data->out, data->offs, SEEK_SET);
 	}
+
+	adj = gtk_scrolled_window_get_vadjustment (
+			GTK_SCROLLED_WINDOW (data->scrolled));
+	gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
+	gtk_scrolled_window_set_vadjustment (
+			GTK_SCROLLED_WINDOW (data->scrolled), adj);
 
 	return TRUE;
 }
