@@ -7,6 +7,10 @@ typedef struct Data {
 	gchar *nick;
 	GtkListStore *nicks;
 	gboolean scrolling;
+	GdkRGBA bg;
+	GdkRGBA fg;
+	GtkWidget *window;
+	GtkWidget *entry;
 } Data;
 
 typedef struct ListCBData {

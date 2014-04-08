@@ -107,7 +107,7 @@ parseirc (Data *data, gchar *buf, gint r)
 			g_free(bg);
 			bg = g_strdup ("transbg");
 			g_free (fg);
-			fg = g_strdup ("whitefg");
+			fg = g_strdup ("defaultfg");
 
 			break;
 		case 0x03:
@@ -157,6 +157,8 @@ parseirc (Data *data, gchar *buf, gint r)
 
 			switch (c) {
 			default:
+				fg = g_strdup ("defaultfg");
+				break;
 			case 0:
 				fg = g_strdup ("whitefg");
 				break;
@@ -309,7 +311,7 @@ parseirc (Data *data, gchar *buf, gint r)
 
 			if (spaces == 2) {
 				g_free (fg);
-				fg = g_strdup ("whitefg");
+				fg = g_strdup ("defaultfg");
 				postirc (data, "<", 1, bold, italics, underline, fg, bg);
 
 				if (!nick) {
@@ -353,7 +355,7 @@ parseirc (Data *data, gchar *buf, gint r)
 
 			if (nick == 1) {
 				g_free (fg);
-				fg = g_strdup ("whitefg");
+				fg = g_strdup ("defaultfg");
 				nick++;
 			}
 
