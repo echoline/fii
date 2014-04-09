@@ -29,6 +29,7 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 	gboolean underline, gchar *fg, gchar *bg)
 {
 	GtkTextIter end;
+	GtkTextMark *mark;
 
 	gtk_text_buffer_get_end_iter (data->buffer, &end);
 	gtk_text_buffer_insert_with_tags_by_name (data->buffer, &end, buf, r,
@@ -37,7 +38,11 @@ postirc (Data *data, gchar *buf, gint r, gboolean bold, gboolean italics,
 				underline ? "underline" : "ununderline",
 				fg, bg, NULL);
 
-	data->scrolling = FALSE;
+	gtk_text_buffer_get_end_iter (data->buffer, &end);
+	gtk_text_buffer_move_mark_by_name (data->buffer, "end", &end);
+	mark = gtk_text_buffer_get_mark (data->buffer, "end");
+	gtk_text_view_scroll_to_mark (GTK_TEXT_VIEW (data->textview), mark, 0,
+								FALSE, 0, 0);
 }
 
 static gboolean
@@ -73,7 +78,8 @@ parseirc (Data *data, gchar *buf, gint r)
 	GtkTreeIter iter;
 
 	while (buf[i]) {
-		if (data->nick && !g_ascii_strncasecmp(&buf[i], data->nick,
+		if (spaces > 2 && data->nick && !g_ascii_strncasecmp(&buf[i],
+							data->nick,
 						strlen (data->nick))) {
 			if (chunk) {
 				postirc (data, chunk, strlen(chunk), bold,
@@ -418,14 +424,6 @@ readircmsgs (gpointer *arg)
 		close (data->out);
 		data->out = open ("out", O_RDONLY);
 		lseek (data->out, data->offs, SEEK_SET);
-	}
-
-	if (!data->scrolling) {
-		adj = gtk_scrolled_window_get_vadjustment (
-				GTK_SCROLLED_WINDOW (data->scrolled));
-		gtk_adjustment_set_value (adj, gtk_adjustment_get_upper (adj));
-		gtk_scrolled_window_set_vadjustment (
-				GTK_SCROLLED_WINDOW (data->scrolled), adj);
 	}
 
 	return TRUE;

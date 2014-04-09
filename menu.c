@@ -100,6 +100,18 @@ on_activate_underline (GtkMenuItem *item, gpointer arg)
 	entry_append ((Data*)arg, "\x1F");
 }
 
+static void
+on_activate_colors (GtkMenuItem *item, gpointer arg)
+{
+	entry_append ((Data*)arg, "\x03");
+}
+
+static void
+on_activate_ctcps (GtkMenuItem *item, gpointer arg)
+{
+	entry_append ((Data*)arg, "\x01");
+}
+
 void
 on_populate_popup_entry (GtkEntry *entry, GtkWidget *widget, gpointer arg)
 {
@@ -117,6 +129,16 @@ on_populate_popup_entry (GtkEntry *entry, GtkWidget *widget, gpointer arg)
 
 	item = gtk_menu_item_new_with_label ("Underline");
 	g_signal_connect (item, "activate", G_CALLBACK (on_activate_underline),
+									arg);
+	gtk_menu_shell_append (menu, item);
+
+	item = gtk_menu_item_new_with_label ("Colors");
+	g_signal_connect (item, "activate", G_CALLBACK (on_activate_colors),
+									arg);
+	gtk_menu_shell_append (menu, item);
+
+	item = gtk_menu_item_new_with_label ("CTCPs");
+	g_signal_connect (item, "activate", G_CALLBACK (on_activate_ctcps),
 									arg);
 	gtk_menu_shell_append (menu, item);
 

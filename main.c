@@ -17,21 +17,10 @@ on_draw_textview (GtkWidget *widget, cairo_t *cr, gpointer user_data)
 	return FALSE;
 }
 
-static gboolean
-on_button_press_event_scrollbar (GtkWidget *widget, GdkEventButton *event,
-								gpointer arg)
-{
-	Data *data = (Data*)arg;
-
-	data->scrolling = TRUE;
-
-	return FALSE;
-}
-
 int
 main(int argc, char **argv)
 {
-	GtkWidget *grid, *textview, *scrollbar;
+	GtkWidget *grid;
 	PangoFontDescription *fontdesc;
 	Data *data;
 	GdkScreen *screen;
@@ -39,6 +28,7 @@ main(int argc, char **argv)
 	gchar title[PATH_MAX];
 	GtkEntryCompletion *completion;
 	gint status;
+	GtkTextIter end;
 
 	getcwd (title, PATH_MAX-1);
 
@@ -77,27 +67,28 @@ main(int argc, char **argv)
 	gtk_widget_set_vexpand (grid, TRUE);
 	gtk_container_add (GTK_CONTAINER (data->window), grid);
 
-	textview = gtk_text_view_new ();
-	g_signal_connect (textview, "draw", G_CALLBACK(on_draw_textview), data);
-	g_signal_connect (textview, "populate-popup",
+	data->textview = gtk_text_view_new ();
+	g_signal_connect (data->textview, "draw", G_CALLBACK(on_draw_textview),
+									data);
+	g_signal_connect (data->textview, "populate-popup",
 			G_CALLBACK (on_populate_popup_textview), data);
-	gtk_text_view_set_editable (GTK_TEXT_VIEW (textview), FALSE);
-	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview), GTK_WRAP_WORD);
+	gtk_text_view_set_editable (GTK_TEXT_VIEW (data->textview), FALSE);
+	gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (data->textview),
+							GTK_WRAP_WORD_CHAR);
 	fontdesc = pango_font_description_from_string ("monospace 10");
-	gtk_widget_override_font (textview, fontdesc);
+	gtk_widget_override_font (data->textview, fontdesc);
 	pango_font_description_free (fontdesc);
 
 	data->scrolled = gtk_scrolled_window_new (NULL, NULL);
-	scrollbar = gtk_scrolled_window_get_vscrollbar (GTK_SCROLLED_WINDOW
-							(data->scrolled));
-	g_signal_connect (scrollbar, "button-press-event",
-			G_CALLBACK (on_button_press_event_scrollbar), data);
-	gtk_container_add (GTK_CONTAINER (data->scrolled), textview);
+	gtk_container_add (GTK_CONTAINER (data->scrolled), data->textview);
 	gtk_widget_set_hexpand (data->scrolled, TRUE);
 	gtk_widget_set_vexpand (data->scrolled, TRUE);
 	gtk_grid_attach (GTK_GRID (grid), data->scrolled, 0, 0, 1, 1);
 
-	data->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
+	data->buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (
+							data->textview));
+	gtk_text_buffer_get_end_iter (data->buffer, &end);
+	gtk_text_buffer_create_mark (data->buffer, "end", &end, FALSE);
 	gtk_text_buffer_create_tag(data->buffer, "defaultfg", "foreground-rgba", &data->fg, NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "redfg", "foreground", "red", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "orangefg", "foreground", "orange", NULL); 

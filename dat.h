@@ -10,6 +10,7 @@ typedef struct Data {
 	GdkRGBA bg;
 	GdkRGBA fg;
 	GtkWidget *window;
+	GtkWidget *textview;
 	GtkWidget *entry;
 } Data;
 
