@@ -2,7 +2,11 @@
 #include <string.h>
 #include <fcntl.h>
 #include "dat.h"
-#include "fns.h"
+
+typedef struct ListCBData {
+	gboolean found;
+	gchar *nick;
+} ListCBData;
 
 void
 sendircmsg (GtkEntry *entry, gpointer arg)

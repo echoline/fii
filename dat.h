@@ -13,8 +13,3 @@ typedef struct Data {
 	GtkWidget *textview;
 	GtkWidget *entry;
 } Data;
-
-typedef struct ListCBData {
-	gboolean found;
-	gchar *nick;
-} ListCBData;

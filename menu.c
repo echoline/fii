@@ -1,7 +1,6 @@
 #include <gtk/gtk.h>
 #include <string.h>
 #include "dat.h"
-#include "fns.h"
 
 static void
 on_activate_background (GtkMenuItem *item, gpointer arg)
