@@ -197,7 +197,7 @@ on_populate_popup_entry (GtkEntry *entry, GtkWidget *widget, gpointer arg)
 	GtkWidget *item;
 	
 	item = gtk_menu_item_new_with_label ("Bold");
-	g_signal_connect (item, "toggled", G_CALLBACK (on_activate_bold), arg);
+	g_signal_connect (item, "activate", G_CALLBACK (on_activate_bold), arg);
 	gtk_menu_shell_append (menu, item);
 	gtk_widget_show (item);
 }
