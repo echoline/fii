@@ -12,4 +12,5 @@ typedef struct Data {
 	GtkWidget *window;
 	GtkWidget *textview;
 	GtkWidget *entry;
+	GtkEntryCompletion *completion;
 } Data;
