@@ -91,8 +91,6 @@ main(int argc, char **argv)
 	gint status;
 	GtkTextIter end;
 
-	getcwd (title, PATH_MAX-1);
-
 	gtk_init (&argc, &argv);
 	
 	data = g_new0 (Data, 1);
@@ -100,6 +98,12 @@ main(int argc, char **argv)
 	if (argc > 1) {
 		data->nick = g_strdup (argv[1]);
 	}
+
+	if (argc > 2) {
+		chdir (argv[2]);
+	}
+
+	getcwd (title, PATH_MAX-1);
 
 	data->in = open ("in", O_WRONLY);
 	data->out = open ("out", O_RDONLY);
