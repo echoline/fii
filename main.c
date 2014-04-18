@@ -187,6 +187,7 @@ main(int argc, char **argv)
 	gtk_text_buffer_create_tag(data->buffer, "lightcyanbg", "background", "light cyan", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "lightbluebg", "background", "light blue", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "lightgraybg", "background", "light gray", NULL); 
+	gtk_text_buffer_create_tag(data->buffer, "pinkbg", "background", "pink", NULL); 
 	gtk_text_buffer_create_tag(data->buffer, "italics", "style", PANGO_STYLE_ITALIC, NULL);
 	gtk_text_buffer_create_tag(data->buffer, "unitalics", "style", PANGO_STYLE_NORMAL, NULL);
 	gtk_text_buffer_create_tag(data->buffer, "bold", "weight", PANGO_WEIGHT_BOLD, NULL);
